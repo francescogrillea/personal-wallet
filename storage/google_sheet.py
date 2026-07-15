@@ -1,4 +1,5 @@
 import os
+from itertools import chain
 
 import pandas as pd
 from google.oauth2 import service_account
@@ -34,8 +35,24 @@ class GoogleSheetStorage(BaseStorage):
             if key.startswith(key_prefix)
         }
 
+    def load_ids(self) -> set[str]:
+        sheet, cell = self._range_name.split('!')
+        col, row = ''.join(c for c in cell if c.isalpha()), ''.join(c for c in cell if c.isdigit())
+        digest_col = chr(ord(col) + 8)  # digest is the 9th field
+        result = self.service.spreadsheets().values().get(
+            spreadsheetId=self._spreadsheet_id,
+            range=f"{sheet}!{digest_col}{row}:{digest_col}"
+        ).execute()
+        return set(chain.from_iterable(result.get('values', [])))
+
     def save(self, data: list[TransactionDTO]) -> GoogleSheetStorageResponse:
         try:
+            existing_digests = self.load_ids()
+            data = [t for t in data if t.digest not in existing_digests]
+
+            if not data:
+                return GoogleSheetStorageResponse(status="success", items_saved=0)
+
             df = pd.DataFrame([transaction.model_dump() for transaction in data])
             df['value_date'] = df['value_date'].apply(lambda x: x.strftime('%d/%m/%Y'))
             df['accounting_date'] = df['accounting_date'].apply(lambda x: x.strftime('%d/%m/%Y'))
