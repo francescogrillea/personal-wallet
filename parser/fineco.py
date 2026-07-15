@@ -1,4 +1,3 @@
-from pathlib import Path
 from typing import BinaryIO
 
 import pandas as pd
@@ -9,13 +8,7 @@ from parser.base_parser import BaseParser
 
 class FinecoParser(BaseParser):
 
-    SUPPORTED_EXTENSIONS = {".xlsx"}
-
-    def __init__(self, *args, **kwargs):
-        pass
-
-    def parse(self, filename: str, source: BinaryIO) -> list[Transaction]:
-        self.validate_extension(filename)
+    def _parse_xlsx(source: BinaryIO) -> list[Transaction]:
         df_raw = pd.read_excel(source, header=None, sheet_name="Movimenti")
 
         # Locate the header row by finding the row that contains "Data_Operazione"
@@ -40,3 +33,5 @@ class FinecoParser(BaseParser):
             )
             for _, row in df.iterrows()
         ]
+
+    SUPPORTED_EXTENSIONS = {".xlsx": _parse_xlsx}

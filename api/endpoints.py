@@ -1,6 +1,6 @@
 import io
 
-from fastapi import APIRouter, HTTPException, UploadFile
+from fastapi import APIRouter, Form, HTTPException, UploadFile
 from fastapi.responses import JSONResponse
 
 from model.transaction import TransactionDTO
@@ -27,15 +27,19 @@ def help() -> JSONResponse:
 
 
 @router.post("/upload")
-async def upload(file: UploadFile):
+async def upload(file: UploadFile, bank_id: str = Form(...)):
     if not file.filename:
         raise HTTPException(status_code=400, detail="Filename is required.")
+
+    parser = registry.parsing_service_registry.get(bank_id)
+    if not parser:
+        raise HTTPException(status_code=400, detail=f"No parser found for bank_id '{bank_id}'.")
 
     contents = await file.read()
     if not contents:
         raise HTTPException(status_code=400, detail="File is empty.")
 
-    transactions = registry.parsing_service.parse(file.filename, io.BytesIO(contents))
+    transactions = parser.parse(file.filename, io.BytesIO(contents))
     dtos = [TransactionDTO.from_transaction(t) for t in transactions]
     result = registry.storage_service.save(dtos)
 

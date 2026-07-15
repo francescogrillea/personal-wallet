@@ -8,7 +8,6 @@ class ServiceConfig(BaseModel):
 
 class AppConfig(BaseModel):
     storage_service: ServiceConfig
-    parsing_service: ServiceConfig
 
 def get_object_from_config(config_model: type[AppConfig], filename: str = "config.yaml", abs_path: bool = False) -> AppConfig:
     """
