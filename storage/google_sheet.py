@@ -38,7 +38,7 @@ class GoogleSheetStorage(BaseStorage):
     def load_ids(self) -> set[str]:
         sheet, cell = self._range_name.split('!')
         col, row = ''.join(c for c in cell if c.isalpha()), ''.join(c for c in cell if c.isdigit())
-        digest_col = chr(ord(col) + 8)  # digest is the 9th field
+        digest_col = chr(ord(col) + 1)  # digest is the 2nd field
         result = self.service.spreadsheets().values().get(
             spreadsheetId=self._spreadsheet_id,
             range=f"{sheet}!{digest_col}{row}:{digest_col}"
@@ -53,7 +53,8 @@ class GoogleSheetStorage(BaseStorage):
             if not data:
                 return GoogleSheetStorageResponse(status="success", items_saved=0)
 
-            df = pd.DataFrame([transaction.model_dump() for transaction in data])
+            COLUMNS = ['uid', 'digest', 'upload_datetime', 'value_date', 'accounting_date', 'amount', 'description', 'category', 'notes']
+            df = pd.DataFrame([transaction.model_dump() for transaction in data])[COLUMNS]
             df['value_date'] = df['value_date'].apply(lambda x: x.strftime('%d/%m/%Y'))
             df['accounting_date'] = df['accounting_date'].apply(lambda x: x.strftime('%d/%m/%Y'))
             df['upload_datetime'] = df['upload_datetime'].apply(lambda x: x.strftime('%d/%m/%Y %H.%M.%S'))
