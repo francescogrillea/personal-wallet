@@ -16,7 +16,6 @@ class Transaction(BaseModel):
 
 class TransactionDTO(Transaction):
     category: str | None = None
-    notes: str | None = None
     upload_datetime: datetime = Field(default_factory=datetime.now)
 
     @classmethod
@@ -26,7 +25,7 @@ class TransactionDTO(Transaction):
     @computed_field
     @property
     def digest(self) -> str:
-        payload = self.model_dump(mode="python", exclude={"uid", "digest", "upload_datetime"})
+        payload = self.model_dump(mode="python", exclude={"uid", "digest", "upload_datetime", "category"})
         payload.pop("digest", None)
         serialized = json.dumps(payload, default=str, sort_keys=True)
         return hashlib.sha256(serialized.encode()).hexdigest()

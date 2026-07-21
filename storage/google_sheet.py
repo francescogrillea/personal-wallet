@@ -53,7 +53,7 @@ class GoogleSheetStorage(BaseStorage):
             if not data:
                 return GoogleSheetStorageResponse(status="success", items_saved=0)
 
-            COLUMNS = ['uid', 'digest', 'upload_datetime', 'value_date', 'accounting_date', 'amount', 'description', 'category', 'notes']
+            COLUMNS = ['uid', 'digest', 'upload_datetime', 'value_date', 'accounting_date', 'amount', 'description', 'category']
             df = pd.DataFrame([transaction.model_dump() for transaction in data])[COLUMNS]
             df['value_date'] = df['value_date'].apply(lambda x: x.strftime('%d/%m/%Y'))
             df['accounting_date'] = df['accounting_date'].apply(lambda x: x.strftime('%d/%m/%Y'))
