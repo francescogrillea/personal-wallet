@@ -3,7 +3,7 @@ import json
 from datetime import date, datetime
 from uuid import uuid4
 
-from pydantic import BaseModel, Field, computed_field
+from pydantic import BaseModel, Field, computed_field, field_validator
 
 
 class Transaction(BaseModel):
@@ -12,6 +12,13 @@ class Transaction(BaseModel):
     accounting_date: date
     amount: float
     description: str
+    
+    @field_validator("value_date", "accounting_date", mode="before")
+    @classmethod
+    def parse_custom_date(cls, value):
+        if isinstance(value, str):
+            return datetime.strptime(value, "%d/%m/%Y").date()
+        return value
 
 
 class TransactionDTO(Transaction):
