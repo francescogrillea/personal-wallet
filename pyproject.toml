@@ -13,7 +13,7 @@ dependencies = [
     "pydantic==2.13.4",
     "python-dotenv==1.1.1",
     "python-multipart==0.0.32",
-z]
+]
 
 [dependency-groups]
 dev = [
