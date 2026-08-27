@@ -4,8 +4,8 @@ from itertools import chain
 import pandas as pd
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
-from model.transaction import TransactionDTO
-from storage.base_storage import BaseStorage, BaseStorageResponse
+from app.model.transaction import TransactionDTO
+from app.storage.base_storage import BaseStorage, BaseStorageResponse
 
 SCOPES = ['https://www.googleapis.com/auth/spreadsheets']
 

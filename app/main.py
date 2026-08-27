@@ -5,7 +5,7 @@ load_dotenv()
 import uvicorn
 from fastapi import FastAPI
 
-from api.endpoints import router
+from app.api.endpoints import router
 
 app = FastAPI(title="Personal Wallet API")
 app.include_router(router)

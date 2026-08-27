@@ -3,8 +3,8 @@ import io
 from fastapi import APIRouter, Form, HTTPException, UploadFile
 from fastapi.responses import JSONResponse
 
-from model.transaction import TransactionDTO
-from registry import registry
+from app.model.transaction import TransactionDTO
+from app.registry import registry
 
 router = APIRouter()
 

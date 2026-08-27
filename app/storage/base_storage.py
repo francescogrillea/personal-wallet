@@ -3,7 +3,7 @@ from enum import Enum
 
 from pydantic import BaseModel
 
-from model.transaction import TransactionDTO
+from app.model.transaction import TransactionDTO
 
 
 class StorageProviders(str, Enum):

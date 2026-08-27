@@ -2,8 +2,8 @@ from typing import BinaryIO
 
 import pandas as pd
 
-from model.transaction import Transaction
-from parser.base_parser import BaseParser
+from app.model.transaction import Transaction
+from app.parser.base_parser import BaseParser
 
 
 class FinecoParser(BaseParser):

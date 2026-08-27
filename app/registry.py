@@ -1,9 +1,9 @@
-from parser.base_parser import ParserProviders
-from parser.fineco import FinecoParser
-from storage.google_sheet import GoogleSheetStorage
-from storage.base_storage import StorageProviders
+from app.parser.base_parser import ParserProviders
+from app.parser.fineco import FinecoParser
+from app.storage.google_sheet import GoogleSheetStorage
+from app.storage.base_storage import StorageProviders
 
-from config import AppConfig, get_object_from_config
+from app.config import AppConfig, get_object_from_config
 
 
 class Registry:

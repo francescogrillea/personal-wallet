@@ -3,7 +3,7 @@ from enum import Enum
 from pathlib import Path
 from typing import BinaryIO, Callable
 
-from model.transaction import Transaction
+from app.model.transaction import Transaction
 
 
 class ParserProviders(str, Enum):
