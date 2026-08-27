@@ -1,0 +1,10 @@
+storage_service:
+  provider: google_sheets
+  config:
+    spreadsheet_id: 1Qd9D6DzEeza_gk-BUwIcBaOYIYbUMAmlcmvrWWREg7o
+    range_name: Transactions!B2
+
+# parsing_service:
+#   provider: fineco
+#   config:
+#     placeholder: value

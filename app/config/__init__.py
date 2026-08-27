@@ -22,7 +22,7 @@ def get_object_from_config(config_model: type[AppConfig], filename: str = "confi
         Config: An instance of the Pydantic model populated with the configuration data.
     """
     if not abs_path:
-        filepath = os.path.join(os.getenv("CONFIG_DIR", "config"), filename)
+        filepath = os.path.join(os.getenv("CONFIG_DIR", "app/config"), filename)
     else:
         filepath = filename
 
