@@ -26,7 +26,7 @@ class TransactionDTO(Transaction):
     upload_datetime: datetime = Field(default_factory=datetime.now)
 
     @classmethod
-    def from_transaction(cls, transaction: Transaction, **kwargs) -> "TransactionDTO":
+    def from_value_to_dto(cls, transaction: Transaction, **kwargs) -> "TransactionDTO":
         return cls(**transaction.model_dump(), **kwargs)
 
     @computed_field

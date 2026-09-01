@@ -13,8 +13,8 @@ class Registry:
         self.config = get_object_from_config(config_model=AppConfig)
         self._init_registries()
 
-        self.storage_service = self.storage_service_registry.get(self.config.storage_service.provider)(
-            **self.config.storage_service.config)
+        # self.storage_service = self.storage_service_registry.get(self.config.storage_service.provider)(
+        #     **self.config.storage_service.config)
 
     def _init_registries(self):
         """Initialize service registries mapping providers to their implementations."""

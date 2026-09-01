@@ -3,12 +3,13 @@ from typing import BinaryIO
 import pandas as pd
 
 from model.transaction import Transaction
+from model.portfolio import PortfolioSnapshot
 from parser.base_parser import BaseParser
 
 
 class FinecoParser(BaseParser):
 
-    def _parse_xlsx(source: BinaryIO) -> list[Transaction]:
+    def _parse_transactions_xlsx(source: BinaryIO) -> list[Transaction]:
         df_raw = pd.read_excel(source, header=None, sheet_name="Movimenti")
 
         # Locate the header row by finding the row that contains "Data_Operazione"
@@ -34,4 +35,26 @@ class FinecoParser(BaseParser):
             for _, row in df.iterrows()
         ]
 
-    SUPPORTED_EXTENSIONS = {".xlsx": _parse_xlsx}
+    
+    def _parse_investments_xlsx(source: BinaryIO) -> list:
+        df_raw = pd.read_excel(source, header=2)
+        
+        df = df_raw
+        df.dropna(inplace=True)
+
+        return [
+            PortfolioSnapshot(
+                isin=row['ISIN'],
+                invested_capital=row['Valore di carico'],
+                market_value=row['Valore di mercato €']
+            )
+            for _, row in df.iterrows()
+        ]
+
+        
+
+    
+    SUPPORTED_TRANSACTION_EXTENSIONS = {".xlsx": _parse_transactions_xlsx, 
+                                        ".xls": _parse_transactions_xlsx}
+    SUPPORTED_INVESTMENT_EXTENSIONS = {".xlsx": _parse_investments_xlsx,
+                                       ".xls": _parse_investments_xlsx}

@@ -11,15 +11,25 @@ class ParserProviders(str, Enum):
 
 class BaseParser(ABC):
 
-    SUPPORTED_EXTENSIONS: dict[str, Callable[[BinaryIO], list[Transaction]]] = {}
+    SUPPORTED_TRANSACTION_EXTENSIONS: dict[str, Callable[[BinaryIO], list[Transaction]]] = {}
+    SUPPORTED_INVESTMENT_EXTENSIONS: dict[str, Callable[[BinaryIO], list[Transaction]]] = {}
+
 
     def __init__(self):
         raise TypeError(f"{self.__class__.__name__} è una classe statica e non può essere istanziata.")
 
     @classmethod
-    def parse(cls, filename: str, source: BinaryIO) -> list[Transaction]:
+    def parse_transactions(cls, filename: str, source: BinaryIO) -> list[Transaction]:
         ext = Path(filename).suffix.lower()
-        handler = cls.SUPPORTED_EXTENSIONS.get(ext)
+        handler = cls.SUPPORTED_TRANSACTION_EXTENSIONS.get(ext)
         if handler is None:
-            raise ValueError(f"{cls.__name__} does not support extension '{ext}'")
+            raise ValueError(f"{cls.__name__} does not support extension '{ext}' for transactions parsing")
+        return handler(source)
+    
+    @classmethod
+    def parse_investments(cls, filename: str, source: BinaryIO) -> list[Transaction]:
+        ext = Path(filename).suffix.lower()
+        handler = cls.SUPPORTED_INVESTMENT_EXTENSIONS.get(ext)
+        if handler is None:
+            raise ValueError(f"{cls.__name__} does not support extension '{ext}' for investments parsing")
         return handler(source)
