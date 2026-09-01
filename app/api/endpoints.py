@@ -1,10 +1,14 @@
 import io
+import logging
 
 from fastapi import APIRouter, Form, HTTPException, UploadFile
 from fastapi.responses import JSONResponse
 
+from auth import CurrentUser
 from model.transaction import TransactionDTO
 from registry import registry
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
@@ -21,13 +25,20 @@ def help() -> JSONResponse:
         "endpoints": {
             "GET /health": "Returns the service health status.",
             "GET /help": "Returns this help message.",
-            "POST /upload": "Upload a standard .xlsx movements file. Returns a list of parsed transactions.",
-        }
+            "GET /me": "Returns the authenticated Google account. Requires a Bearer ID token.",
+            "POST /upload": "Upload a standard .xlsx movements file. Returns a list of parsed transactions. Requires a Bearer ID token.",
+        },
+        "authentication": "Every endpoint except /health and /help requires an 'Authorization: Bearer <Google ID token>' header.",
     })
 
 
+@router.get("/me")
+def me(user: CurrentUser) -> JSONResponse:
+    return JSONResponse({"sub": user.sub, "email": user.email, "name": user.name})
+
+
 @router.post("/upload")
-async def upload(file: UploadFile, bank_id: str = Form(...)):
+async def upload(user: CurrentUser, file: UploadFile, bank_id: str = Form(...)):
     if not file.filename:
         raise HTTPException(status_code=400, detail="Filename is required.")
 
@@ -42,5 +53,6 @@ async def upload(file: UploadFile, bank_id: str = Form(...)):
     transactions = parser.parse(file.filename, io.BytesIO(contents))
     dtos = [TransactionDTO.from_transaction(t) for t in transactions]
     result = registry.storage_service.save(dtos)
+    logger.info("Saved %s transactions from '%s' for %s (%s).", result.items_saved, file.filename, user.email, user.sub)
 
     return result

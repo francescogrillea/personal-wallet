@@ -52,6 +52,46 @@ Expected response:
 
 ---
 
+## Authentication
+
+Every endpoint except `GET /health` and `GET /help` requires a Google **ID Token** (OpenID Connect):
+
+```
+Authorization: Bearer <google_id_token>
+```
+
+`GoogleAuthMiddleware` ([app/auth](app/auth/__init__.py)) verifies each token cryptographically against
+Google's public certificates using `google-auth`, checking signature, audience (`GOOGLE_CLIENT_ID`),
+issuer (`accounts.google.com`), expiry and `email_verified`. Anything missing or invalid is rejected
+with `401 Unauthorized` and a `WWW-Authenticate: Bearer` challenge.
+
+On success the identity is attached to `request.state.user` and can be injected into any endpoint
+with the `CurrentUser` dependency, so operations can be attributed to a single user:
+
+```python
+from auth import CurrentUser
+
+@router.get("/me")
+def me(user: CurrentUser):
+    return {"sub": user.sub, "email": user.email}
+```
+
+Verified tokens are cached in memory until their `exp`, so Google's certificates are not
+re-fetched on every call.
+
+### Auth environment variables
+
+```bash
+# Google OAuth 2.0 Web client ID; ID tokens are only accepted for this audience.
+GOOGLE_CLIENT_ID=xxxxxxxx.apps.googleusercontent.com
+# Browser origins allowed to call the API (comma separated). Needed for the frontend.
+ALLOWED_ORIGINS=http://localhost:3020
+```
+
+The server refuses to start if `GOOGLE_CLIENT_ID` is not set.
+
+---
+
 ## Configuration
 
 The application uses a configuration file `config/config.yaml` to set up services:
@@ -140,6 +180,8 @@ Upload a bank statement file and save the transactions.
 **cURL:**
 ```bash
 curl -X POST http://localhost:8000/upload \
+  -H "Authorization: Bearer $GOOGLE_ID_TOKEN" \
+  -F "bank_id=fineco" \
   -F "file=@/path/to/your_bank_export"
 ```
 
