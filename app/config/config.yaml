@@ -1,8 +1,8 @@
 storage_service:
   provider: google_sheets
   config:
-    spreadsheet_id: 1Qd9D6DzEeza_gk-BUwIcBaOYIYbUMAmlcmvrWWREg7o
-    range_name: Transactions!B2
+    spreadsheet_id: 1OpS8W4PkstObGHNGdNmpnATOx-k5pOPJlOeItfH46aw
+    range_name: Transactions!B5
 
 # parsing_service:
 #   provider: fineco
