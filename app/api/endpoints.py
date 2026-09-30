@@ -5,7 +5,7 @@ from fastapi import APIRouter, Form, HTTPException, UploadFile
 from fastapi.responses import JSONResponse
 
 from model.transaction import TransactionDTO
-from model.portfolio import PortfolioSnapshotDTO
+from model.portfolio import PortfolioMovementDTO, PortfolioSnapshotDTO
 from registry import registry
 
 router = APIRouter()
@@ -28,8 +28,8 @@ def help() -> JSONResponse:
     })
 
 
-@router.post("/api/v1/transactions")
-async def upload_transactions_file(file: UploadFile, bank_id: str = Form(...),
+@router.post("/api/v1/liquidity/movements")
+async def upload_liquidity_movements(file: UploadFile, bank_id: str = Form(...),
                                     storage_id: str = Form(...), storage_config: str = Form(...)):
 
     if not file.filename:
@@ -48,22 +48,22 @@ async def upload_transactions_file(file: UploadFile, bank_id: str = Form(...),
     if not contents:
         raise HTTPException(status_code=400, detail="File is empty.")
 
-    transactions = parser.parse_transactions(file.filename, io.BytesIO(contents))
+    transactions = parser.parse_liquidity_movements_file(file.filename, io.BytesIO(contents))
     dtos = [TransactionDTO.from_value_to_dto(t) for t in transactions]
-    result = storage.save_transactions(data=dtos, **storage_config)
+    result = storage.save_liquidity_movements(data=dtos, **storage_config)
 
     return result
 
 
-@router.post("/api/v1/portfolio")
-async def upload_portfolio_file(file: UploadFile, bank_id: str = Form(...),
+@router.post("/api/v1/portfolio/snapshot")
+async def upload_portfolio_snapshot(file: UploadFile, bank_id: str = Form(...),
                                 storage_id: str = Form(...), storage_config: str = Form(...)):
     if not file.filename:
         raise HTTPException(status_code=400, detail="Filename is required.")
 
     parser = registry.parsing_service_registry.get(bank_id)
-    storage = registry.storage_service_registry.get(storage_id)(**storage_config)
     storage_config = json.loads(storage_config)
+    storage = registry.storage_service_registry.get(storage_id)(**storage_config)
     
     if not parser:
         raise HTTPException(status_code=400, detail=f"No parser found for bank_id '{bank_id}'.")
@@ -74,9 +74,35 @@ async def upload_portfolio_file(file: UploadFile, bank_id: str = Form(...),
     if not contents:
         raise HTTPException(status_code=400, detail="File is empty.")
 
-    values = parser.parse_investments(file.filename, io.BytesIO(contents))
+    values = parser.parse_portfolio_snapshot_file(file.filename, io.BytesIO(contents))
     dtos = [PortfolioSnapshotDTO.from_value_to_dto(v) for v in values]
-    result = storage.save_portfolio(data=dtos, **storage_config)
+    result = storage.save_portfolio_snapshot(data=dtos, **storage_config)
+
+    return result
+
+
+@router.post("/api/v1/portfolio/movements")
+async def upload_portfolio_movements(file: UploadFile, bank_id: str = Form(...), 
+                                     storage_id: str = Form(...), storage_config: str = Form(...)):
+    if not file.filename:
+        raise HTTPException(status_code=400, detail="Filename is required.")
+
+    parser = registry.parsing_service_registry.get(bank_id)
+    storage_config = json.loads(storage_config)
+    storage = registry.storage_service_registry.get(storage_id)(**storage_config)
+    
+    if not parser:
+        raise HTTPException(status_code=400, detail=f"No parser found for bank_id '{bank_id}'.")
+    if not storage:
+        raise HTTPException(status_code=400, detail=f"No storage found for storage_id '{storage_id}'.")
+
+    contents = await file.read()
+    if not contents:
+        raise HTTPException(status_code=400, detail="File is empty.")
+
+    values = parser.parse_portfolio_movements_file(file.filename, io.BytesIO(contents))
+    dtos = [PortfolioMovementDTO.from_value_to_dto(v) for v in values]
+    result = storage.save_portfolio_movements(data=dtos, **storage_config)
 
     return result
 

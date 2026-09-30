@@ -4,7 +4,7 @@ from enum import Enum
 from pydantic import BaseModel
 
 from model.transaction import TransactionDTO
-from model.portfolio import PortfolioSnapshotDTO
+from model.portfolio import PortfolioMovementDTO, PortfolioSnapshotDTO
 
 
 class StorageProviders(str, Enum):
@@ -17,11 +17,15 @@ class BaseStorageResponse(BaseModel):
 
 class BaseStorage(ABC):
     @abstractmethod
-    def save_transactions(self, data: list[TransactionDTO]) -> BaseStorageResponse:
+    def save_liquidity_movements(self, data: list[TransactionDTO]) -> BaseStorageResponse:
         pass
 
     @abstractmethod
-    def save_portfolio(self, data: list[PortfolioSnapshotDTO], sheet_name: str, cell: str) -> BaseStorageResponse:
+    def save_portfolio_snapshot(self, data: list[PortfolioSnapshotDTO]) -> BaseStorageResponse:
+        pass
+    
+    @abstractmethod
+    def save_portfolio_movements(self, data: list[PortfolioMovementDTO]) -> BaseStorageResponse:
         pass
 
     @abstractmethod
