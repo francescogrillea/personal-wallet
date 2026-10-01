@@ -43,6 +43,17 @@ class GoogleSheetStorage(BaseStorage):
         ).execute()
         return set(chain.from_iterable(result.get('values', [])))
 
+    
+    def convert_liquidity_movements(self, data: list[TransactionDTO]) -> pd.DataFrame:
+        
+        COLUMNS = ['uid', 'digest', 'upload_datetime', 'value_date', 'accounting_date', 'amount', 'description', 'category']
+        df = pd.DataFrame([transaction.model_dump() for transaction in data])[COLUMNS]
+        df['value_date'] = df['value_date'].apply(lambda x: x.strftime('%d/%m/%Y'))
+        df['accounting_date'] = df['accounting_date'].apply(lambda x: x.strftime('%d/%m/%Y'))
+        df['upload_datetime'] = df['upload_datetime'].apply(lambda x: x.strftime('%d/%m/%Y %H.%M.%S'))
+        
+        return df
+
     def save_liquidity_movements(self, data: list[TransactionDTO], spreadsheet_id: str, sheet_name: str, cell: str) -> GoogleSheetStorageResponse:
         try:
             range = f"{sheet_name}!{cell}"
@@ -52,13 +63,8 @@ class GoogleSheetStorage(BaseStorage):
 
             if not data:
                 return GoogleSheetStorageResponse(status="success", items_saved=0)
-
-            COLUMNS = ['uid', 'digest', 'upload_datetime', 'value_date', 'accounting_date', 'amount', 'description', 'category']
-            df = pd.DataFrame([transaction.model_dump() for transaction in data])[COLUMNS]
-            df['value_date'] = df['value_date'].apply(lambda x: x.strftime('%d/%m/%Y'))
-            df['accounting_date'] = df['accounting_date'].apply(lambda x: x.strftime('%d/%m/%Y'))
-            df['upload_datetime'] = df['upload_datetime'].apply(lambda x: x.strftime('%d/%m/%Y %H.%M.%S'))
-
+            
+            df = self.convert_liquidity_movements(data=data)
             body = {
                 'values': df.values.tolist()
             }
@@ -74,15 +80,17 @@ class GoogleSheetStorage(BaseStorage):
         except Exception as e:
             return GoogleSheetStorageResponse(status="error", items_saved=0, error_message=str(e))
 
+    def convert_portfolio_snapshot(self, data: list[PortfolioSnapshotDTO]) -> pd.DataFrame:
+        df = pd.DataFrame([d.model_dump() for d in data])
+        df['upload_date'] = df['upload_date'].apply(lambda x: x.strftime('%d/%m/%Y'))
+        return df
+
     def save_portfolio_snapshot(self, data: list[PortfolioSnapshotDTO], spreadsheet_id: str, sheet_name: str, cell: str) -> GoogleSheetStorageResponse:
         
         try:
             range = f"{sheet_name}!{cell}"
-            
-            df = pd.DataFrame([d.model_dump() for d in data])
-            df['upload_date'] = df['upload_date'].apply(lambda x: x.strftime('%d/%m/%Y'))
 
-            
+            df = self.convert_portfolio_snapshot(data=data)
             self.service.spreadsheets().values().append(
                 spreadsheetId=spreadsheet_id,
                 range=range,
@@ -96,6 +104,16 @@ class GoogleSheetStorage(BaseStorage):
         except Exception as e:
             return GoogleSheetStorageResponse(status="error", items_saved=0, error_message=str(e))
         
+    def convert_portfolio_movements(self, data: list[PortfolioMovementDTO]) -> pd.DataFrame:
+        
+        COLUMNS = ['uid', 'digest', 'upload_datetime', 'value_date', 'accounting_date', 'title', 'isin', 'movement_type', 'unit_price', 'quantity', 'exchange_rate', 'invested_capital']
+        df = pd.DataFrame([d.model_dump() for d in data])[COLUMNS]
+        df['value_date'] = df['value_date'].apply(lambda x: x.strftime('%d/%m/%Y'))
+        df['accounting_date'] = df['accounting_date'].apply(lambda x: x.strftime('%d/%m/%Y'))
+        df['upload_datetime'] = df['upload_datetime'].apply(lambda x: x.strftime('%d/%m/%Y %H.%M.%S'))
+        
+        return df
+    
     def save_portfolio_movements(self, data: list[PortfolioMovementDTO], spreadsheet_id: str, sheet_name: str, cell: str) -> GoogleSheetStorageResponse:
         range = f"{sheet_name}!{cell}"
         try:
@@ -105,12 +123,7 @@ class GoogleSheetStorage(BaseStorage):
             if not data:
                 return GoogleSheetStorageResponse(status="success", items_saved=0)
         
-            # COLUMNS = ['uid', 'digest', 'upload_datetime', 'value_date', 'accounting_date', 'amount', 'description', 'category']
-            df = pd.DataFrame([d.model_dump() for d in data])
-            df['value_date'] = df['value_date'].apply(lambda x: x.strftime('%d/%m/%Y'))
-            df['accounting_date'] = df['accounting_date'].apply(lambda x: x.strftime('%d/%m/%Y'))
-            df['upload_datetime'] = df['upload_datetime'].apply(lambda x: x.strftime('%d/%m/%Y %H.%M.%S'))
-
+            df = self.convert_portfolio_movements(data=data)
             body = {
                 'values': df.values.tolist()
             }
