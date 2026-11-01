@@ -21,6 +21,37 @@ The flow is simple:
 
 ## Starting the Server
 
+### Docker
+
+Install and start Docker Desktop, and create `.env` in the project root with
+the Google Sheets environment variables described below. Credentials are loaded
+at runtime and are excluded from the image.
+
+```bash
+docker compose up --build -d --wait
+```
+
+Alternatively, deploy with the Bash script (Linux, macOS, WSL, or Git Bash):
+
+```bash
+bash deploy.sh
+```
+
+The script works from any working directory, checks Docker and `.env`, rebuilds
+the image, and waits up to 120 seconds for the container to become healthy.
+If deployment fails, it prints the container status and recent logs.
+
+The API is available at http://localhost:8000 and the interactive documentation
+at http://localhost:8000/docs. The container runs as an unprivileged user and
+includes a health check on `/health`.
+
+```bash
+docker compose logs -f api
+docker compose down
+```
+
+To use another local port, set `PORT` in `.env` (for example `PORT=8001`).
+
 ### Prerequisites
 - Python 3.12 or higher
 - `uv` package manager installed
