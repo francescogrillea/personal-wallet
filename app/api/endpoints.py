@@ -19,9 +19,9 @@ def help() -> JSONResponse:
         "endpoints": {
             "GET /health": "Returns the service health status.",
             "GET /help": "Returns this help message.",
-            "POST /api/v1/liquidity/movements": "Upload a bank liquidity movements file. Requires multipart form fields file, bank_id, storage_id, and storage_config.",
-            "POST /api/v1/portfolio/snapshot": "Upload a portfolio snapshot file. Requires multipart form fields file, bank_id, storage_id, and storage_config.",
-            "POST /api/v1/portfolio/movements": "Upload a portfolio movements file. Requires multipart form fields file, bank_id, storage_id, and storage_config.",
+            "POST /api/v1/liquidity/movements": "Upload a bank liquidity movements file. Requires only the multipart form field file.",
+            "POST /api/v1/portfolio/snapshot": "Upload a portfolio snapshot file. Requires only the multipart form field file.",
+            "POST /api/v1/portfolio/movements": "Upload a portfolio movements file. Requires only the multipart form field file.",
         }
     })
 

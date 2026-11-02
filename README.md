@@ -6,7 +6,7 @@
 
 The flow is simple:
 1. Upload a bank statement file
-2. The API identifies the bank provider by the file name
+2. The API uses the Fineco parser configured in code
 3. Extracts and validates the transactions
 4. Saves data to the configured backend 
 
@@ -85,19 +85,14 @@ Expected response:
 
 ## Configuration
 
-The application uses a configuration file `config/config.yaml` to set up services:
+The application uses a configuration file `app/config/config.yaml` to set up services:
 
 ```yaml
 storage_service:
-  provider: google_sheets
-  config:
-    spreadsheet_id: YOUR_SPREADSHEET_ID
-    range_name: Sheet1!A1
-
-parsing_service:
-  provider: your_provider_here
-  config:
-    placeholder: value
+  spreadsheet_id: YOUR_SPREADSHEET_ID
+  table_liquidity_movements: Transactions!B6
+  table_portfolio_movements: Investments!B6
+  table_portfolio_snapshot: Portfolio!B16
 ```
 
 ### Environment Variables
@@ -158,25 +153,25 @@ curl -X GET http://localhost:8000/help
   "endpoints": {
     "GET /health": "Returns the service health status.",
     "GET /help": "Returns this help message.",
-    "POST /upload": "Upload a bank movements file. Returns a list of parsed transactions."
+    "POST /api/v1/liquidity/movements": "Upload a bank movements file. Returns a list of parsed transactions."
   }
 }
 ```
 
 ---
 
-### 3. POST /upload
+### 3. POST /api/v1/liquidity/movements
 Upload a bank statement file and save the transactions.
 
 **cURL:**
 ```bash
-curl -X POST http://localhost:8000/upload \
+curl -X POST http://localhost:8000/api/v1/liquidity/movements \
   -F "file=@/path/to/your_bank_export"
 ```
 
 **Postman:**
 - **Method**: POST
-- **URL**: `http://localhost:8000/upload`
+- **URL**: `http://localhost:8000/api/v1/liquidity/movements`
 - **Body**:
   - Select **form-data**
   - Add a **File** type field with key `file`
@@ -203,3 +198,11 @@ curl -X POST http://localhost:8000/upload \
   ]
 }
 ```
+
+All upload endpoints accept only the multipart field `file`. The bank provider
+(Fineco) and storage provider (Google Sheets) are fixed in code; the spreadsheet
+and destination ranges are read from `app/config/config.yaml`.
+
+- `POST /api/v1/liquidity/movements`: `table_liquidity_movements`
+- `POST /api/v1/portfolio/movements`: `table_portfolio_movements`
+- `POST /api/v1/portfolio/snapshot`: `table_portfolio_snapshot`

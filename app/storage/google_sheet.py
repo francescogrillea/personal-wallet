@@ -15,8 +15,17 @@ class GoogleSheetStorageResponse(BaseStorageResponse):
 
 class GoogleSheetStorage(BaseStorage):
 
-    # def __init__(self, spreadsheet_id: str, range_name: str, *args, **kwargs):
-    def __init__(self, *args, **kwargs):
+    def __init__(
+        self,
+        spreadsheet_id: str,
+        table_liquidity_movements: str,
+        table_portfolio_movements: str,
+        table_portfolio_snapshot: str,
+    ):
+        self.spreadsheet_id = spreadsheet_id
+        self.table_liquidity_movements = table_liquidity_movements
+        self.table_portfolio_movements = table_portfolio_movements
+        self.table_portfolio_snapshot = table_portfolio_snapshot
         _credentials = self._load_credentials_from_env()
         _auth = service_account.Credentials.from_service_account_info(_credentials, scopes=SCOPES)
 
@@ -34,11 +43,12 @@ class GoogleSheetStorage(BaseStorage):
             if key.startswith(key_prefix)
         }
 
-    def load_ids(self, spreadsheet_id: str, sheet: str, cell: str) -> set[str]:
+    def load_ids(self, table: str) -> set[str]:
+        sheet, cell = table.rsplit('!', 1)
         col, row = ''.join(c for c in cell if c.isalpha()), ''.join(c for c in cell if c.isdigit())
         digest_col = chr(ord(col) + 1)  # digest is the 2nd field
         result = self.service.spreadsheets().values().get(
-            spreadsheetId=spreadsheet_id,
+            spreadsheetId=self.spreadsheet_id,
             range=f"{sheet}!{digest_col}{row}:{digest_col}"
         ).execute()
         return set(chain.from_iterable(result.get('values', [])))
@@ -54,11 +64,11 @@ class GoogleSheetStorage(BaseStorage):
         
         return df
 
-    def save_liquidity_movements(self, data: list[TransactionDTO], spreadsheet_id: str, sheet_name: str, cell: str) -> GoogleSheetStorageResponse:
+    def save_liquidity_movements(self, data: list[TransactionDTO]) -> GoogleSheetStorageResponse:
         try:
-            range = f"{sheet_name}!{cell}"
+            range = self.table_liquidity_movements
             
-            existing_digests = self.load_ids(spreadsheet_id=spreadsheet_id, sheet=sheet_name, cell=cell)
+            existing_digests = self.load_ids(self.table_liquidity_movements)
             data = [t for t in data if t.digest not in existing_digests]
 
             if not data:
@@ -70,7 +80,7 @@ class GoogleSheetStorage(BaseStorage):
             }
 
             self.service.spreadsheets().values().append(
-                spreadsheetId=spreadsheet_id,
+                spreadsheetId=self.spreadsheet_id,
                 range=range,
                 valueInputOption='RAW',
                 insertDataOption='INSERT_ROWS',
@@ -85,14 +95,14 @@ class GoogleSheetStorage(BaseStorage):
         df['upload_date'] = df['upload_date'].apply(lambda x: x.strftime('%d/%m/%Y'))
         return df
 
-    def save_portfolio_snapshot(self, data: list[PortfolioSnapshotDTO], spreadsheet_id: str, sheet_name: str, cell: str) -> GoogleSheetStorageResponse:
+    def save_portfolio_snapshot(self, data: list[PortfolioSnapshotDTO]) -> GoogleSheetStorageResponse:
         
         try:
-            range = f"{sheet_name}!{cell}"
+            range = self.table_portfolio_snapshot
 
             df = self.convert_portfolio_snapshot(data=data)
             self.service.spreadsheets().values().append(
-                spreadsheetId=spreadsheet_id,
+                spreadsheetId=self.spreadsheet_id,
                 range=range,
                 valueInputOption='RAW',
                 insertDataOption='INSERT_ROWS',
@@ -114,10 +124,10 @@ class GoogleSheetStorage(BaseStorage):
         
         return df
     
-    def save_portfolio_movements(self, data: list[PortfolioMovementDTO], spreadsheet_id: str, sheet_name: str, cell: str) -> GoogleSheetStorageResponse:
-        range = f"{sheet_name}!{cell}"
+    def save_portfolio_movements(self, data: list[PortfolioMovementDTO]) -> GoogleSheetStorageResponse:
+        range = self.table_portfolio_movements
         try:
-            existing_digests = self.load_ids(spreadsheet_id=spreadsheet_id, sheet=sheet_name, cell=cell)
+            existing_digests = self.load_ids(self.table_portfolio_movements)
             data = [t for t in data if t.digest not in existing_digests]
 
             if not data:
@@ -129,7 +139,7 @@ class GoogleSheetStorage(BaseStorage):
             }
 
             self.service.spreadsheets().values().append(
-                spreadsheetId=spreadsheet_id,
+                spreadsheetId=self.spreadsheet_id,
                 range=range,
                 valueInputOption='RAW',
                 insertDataOption='INSERT_ROWS',

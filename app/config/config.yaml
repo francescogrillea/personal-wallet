@@ -1,10 +1,5 @@
 storage_service:
-  provider: google_sheets
-  config:
-    spreadsheet_id: 1OpS8W4PkstObGHNGdNmpnATOx-k5pOPJlOeItfH46aw
-    range_name: Transactions!B5
-
-# parsing_service:
-#   provider: fineco
-#   config:
-#     placeholder: value
+  spreadsheet_id: 1OpS8W4PkstObGHNGdNmpnATOx-k5pOPJlOeItfH46aw
+  table_liquidity_movements: Transactions!B6
+  table_portfolio_movements: Investments!B6
+  table_portfolio_snapshot: Portfolio!B16

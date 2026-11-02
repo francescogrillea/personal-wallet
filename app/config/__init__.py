@@ -3,8 +3,10 @@ import os
 import yaml
 
 class ServiceConfig(BaseModel):
-    provider: str
-    config: dict
+    spreadsheet_id: str
+    table_liquidity_movements: str
+    table_portfolio_movements: str
+    table_portfolio_snapshot: str
 
 class AppConfig(BaseModel):
     storage_service: ServiceConfig
