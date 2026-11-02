@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Personal Wallet</title>
+  <style>
+    :root { font-family: Inter, ui-sans-serif, system-ui, -apple-system, sans-serif; color: #172c26; background: #f4f6f3; font-synthesis: none; }
+    * { box-sizing: border-box; }
+    body { margin: 0; min-height: 100vh; background: radial-gradient(ellipse at 90% 0%, #e5eee5 0, transparent 48%); }
+    header { max-width: 1120px; margin: auto; padding: 30px 40px; display: flex; align-items: center; gap: 12px; font-weight: 650; letter-spacing: -.4px; }
+    .brand-icon { display: grid; place-items: center; width: 36px; height: 36px; border-radius: 11px; background: #244e3b; color: #d4ebbd; font-size: 22px; }
+    .header-note { margin-left: auto; font-size: 12px; color: #758179; font-weight: 400; letter-spacing: 0; }
+    main { max-width: 940px; margin: 58px auto 0; padding: 0 32px 48px; }
+    .eyebrow { color: #617b68; font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 16px; }
+    h1 { font-size: clamp(30px, 5vw, 42px); font-weight: 550; letter-spacing: -1.6px; margin: 0 0 14px; line-height: 1.15; }
+    p { color: #768078; line-height: 1.65; font-size: 14px; }
+    .intro { margin: 0; }
+    .section-label { display: flex; align-items: center; gap: 10px; font-size: 12px; font-weight: 600; margin: 36px 0 14px; color: #5c6c62; }
+    .step { border: 1px solid #d7ded5; border-radius: 50%; height: 22px; width: 22px; display: inline-grid; place-items: center; font-size: 10px; }
+    nav { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 24px 0 16px; }
+    button { font: inherit; cursor: pointer; transition: background .18s, border-color .18s, box-shadow .18s; }
+    .choice { text-align: left; position: relative; padding: 20px; border: 1px solid #dce2d9; border-radius: 14px; background: #ffffffb8; color: #283c30; }
+    .choice:hover { border-color: #8ea58f; background: white; }
+    .choice[aria-pressed="true"] { border-color: #547b5d; background: #edf4e9; box-shadow: 0 0 0 1px #547b5d; }
+    .choice[aria-pressed="true"]::after { content: '\2713'; position: absolute; right: 17px; top: 19px; font-size: 11px; color: white; background: #426b4e; border-radius: 50%; width: 18px; height: 18px; display: grid; place-items: center; }
+    .choice-icon { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 9px; background: #e8eee5; margin-bottom: 18px; }
+    svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+    .choice strong { display: block; font-size: 13px; font-weight: 600; letter-spacing: -.2px; }
+    .choice small { display: block; margin-top: 6px; font-size: 11px; line-height: 1.5; color: #7b867c; }
+    form { background: white; border: 1px solid #e0e5dd; padding: 26px; border-radius: 16px; box-shadow: 0 8px 32px #203a2510; }
+    .form-heading { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 20px; }
+    #file-label { font-size: 14px; font-weight: 600; }
+    .format { font-size: 10px; letter-spacing: .5px; color: #74806f; background: #f2f5ef; border-radius: 5px; padding: 5px 8px; white-space: nowrap; }
+    .upload-area { display: block; border: 1px dashed #c7d3c1; background: #fafbf8; padding: 28px 16px; border-radius: 10px; text-align: center; cursor: pointer; }
+    .upload-area:hover { background: #f0f5ec; border-color: #668367; }
+    .upload-icon { display: inline-grid; place-items: center; width: 42px; height: 42px; background: #edf2e8; border-radius: 12px; color: #557348; margin-bottom: 12px; }
+    .upload-title { display: block; font-size: 13px; font-weight: 550; }
+    .upload-hint { display: block; color: #8a9386; font-size: 11px; margin: 5px 0 18px; }
+    input { display: block; margin: auto; font: inherit; font-size: 12px; color: #63705e; max-width: 100%; }
+    input::file-selector-button { font: inherit; border: 1px solid #d5decf; background: white; border-radius: 6px; padding: 8px 12px; color: #375139; margin-right: 10px; cursor: pointer; }
+    .form-footer { display: flex; justify-content: space-between; align-items: center; gap: 16px; margin-top: 22px; }
+    .destination { font-size: 11px; color: #8a9386; }
+    button[type="submit"] { display: flex; align-items: center; justify-content: center; gap: 16px; border: 0; border-radius: 8px; background: #284f3a; color: white; padding: 12px 20px; font-size: 12px; font-weight: 550; }
+    button[type="submit"]:hover { background: #1a3c2a; }
+    button:disabled, input:disabled { opacity: .55; cursor: wait; }
+    :focus-visible { outline: 3px solid #80a768; outline-offset: 4px; }
+    #status { margin: 14px 0 0; font-size: 13px; overflow-wrap: anywhere; }
+    #status:not(:empty) { padding: 12px 16px; background: #eaf3e5; border-radius: 8px; color: #365b32; }
+    #status[data-error="true"]:not(:empty) { color: #a12626; background: #fbecea; }
+    footer { margin-top: 28px; text-align: center; font-size: 10px; color: #99a18f; }
+    @media (max-width: 620px) { header { padding: 22px; } .header-note { display: none; } main { margin-top: 30px; padding: 0 20px 32px; } nav { grid-template-columns: 1fr; gap: 9px; } .choice { padding: 16px 42px 16px 62px; } .choice-icon { position: absolute; left: 16px; top: 18px; margin: 0; } .choice small { margin-top: 4px; } form { padding: 18px; } .form-footer { align-items: stretch; flex-direction: column; } .destination { text-align: center; } }
+    @media (prefers-reduced-motion: reduce) { button { transition: none; } }
+  </style>
+</head>
+<body>
+  <main>
+    <div class="eyebrow">Il tuo spazio finanziario</div>
+    <h1>Tutto in ordine.<br>Un file alla volta.</h1>
+    <p class="intro">Importa i tuoi dati Fineco e aggiorna il tuo Google Sheet.</p>
+    <nav aria-label="Tipo di caricamento">
+      <button class="choice" type="button" data-title="Transazioni liquidit&#224;" data-endpoint="/api/v1/liquidity/movements" aria-pressed="true">
+        <span class="choice-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 8h15m-4-4 4 4-4 4M20 16H5m4-4-4 4 4 4"/></svg></span>
+        <strong>Transazioni liquidit&#224;</strong><small>Entrate e uscite del conto</small>
+      </button>
+      <button class="choice" type="button" data-title="Transazioni portfolio" data-endpoint="/api/v1/portfolio/movements" aria-pressed="false">
+        <span class="choice-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 19h16M6 15v-4m6 4V8m6 7V5"/></svg></span>
+        <strong>Transazioni portfolio</strong><small>Movimenti dei tuoi investimenti</small>
+      </button>
+      <button class="choice" type="button" data-title="Snapshot portfolio" data-endpoint="/api/v1/portfolio/snapshot" aria-pressed="false">
+        <span class="choice-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="14" rx="2"/><path d="M4 10h16m-10 0v9"/></svg></span>
+        <strong>Snapshot portfolio</strong><small>La fotografia del tuo patrimonio</small>
+      </button>
+    </nav>
+    <form id="upload-form">
+      <div class="form-heading"><span id="file-label">Transazioni liquidit&#224;</span><span class="format">XLS / XLSX</span></div>
+      <label class="upload-area" for="file">
+        <span class="upload-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 16V4m-4 4 4-4 4 4M4 15v5h16v-5"/></svg></span>
+        <span class="upload-title">Seleziona il tuo file Excel</span>
+        <span class="upload-hint">Un solo documento per ogni importazione</span>
+        <input id="file" name="file" type="file" accept=".xlsx,.xls" aria-labelledby="file-label" required>
+      </label>
+      <div class="form-footer"><span class="destination">Destinazione: il tuo Google Sheet</span><button type="submit">Carica file <span aria-hidden="true">&#8599;</span></button></div>
+    </form>
+    <p id="status" role="status" aria-live="polite"></p>
+    <footer>Personal Wallet &middot; Meno passaggi, pi&#249; chiarezza.</footer>
+  </main>
+  <script>
+    const form = document.querySelector('#upload-form');
+    const file = document.querySelector('#file');
+    const status = document.querySelector('#status');
+    const choices = document.querySelectorAll('[data-endpoint]');
+    let endpoint = choices[0].dataset.endpoint;
+
+    choices.forEach(button => button.addEventListener('click', () => {
+      endpoint = button.dataset.endpoint;
+      choices.forEach(choice => choice.setAttribute('aria-pressed', String(choice === button)));
+      document.querySelector('#file-label').textContent = button.dataset.title;
+      form.reset();
+      status.textContent = '';
+      status.dataset.error = 'false';
+    }));
+
+    form.addEventListener('submit', async event => {
+      event.preventDefault();
+      if (!form.reportValidity()) return;
+      const body = new FormData(form);
+      const controls = document.querySelectorAll('button, input');
+      controls.forEach(control => control.disabled = true);
+      status.dataset.error = 'false';
+      status.textContent = 'Caricamento in corso…';
+      try {
+        const response = await fetch(endpoint, { method: 'POST', body });
+        const result = await response.json();
+        if (!response.ok || result.status !== 'success') {
+          const detail = result.error_message || result.detail;
+          throw new Error(typeof detail === 'string' ? detail : `Caricamento non riuscito (HTTP ${response.status}).`);
+        }
+        status.textContent = `Caricamento completato. Righe salvate: ${result.items_saved}.`;
+        form.reset();
+      } catch (error) {
+        status.dataset.error = 'true';
+        status.textContent = error instanceof TypeError
+          ? 'Impossibile contattare il server. Riprova.'
+          : error.message;
+      } finally {
+        controls.forEach(control => control.disabled = false);
+      }
+    });
+  </script>
+</body>
+</html>

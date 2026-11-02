@@ -1,10 +1,17 @@
+from pathlib import Path
+
 from fastapi import APIRouter
-from fastapi.responses import JSONResponse
+from fastapi.responses import FileResponse, JSONResponse
 
 from api.v1.router import router as v1_router
 
 router = APIRouter()
 router.include_router(v1_router)
+
+
+@router.get("/", include_in_schema=False)
+def frontend() -> FileResponse:
+    return FileResponse(Path(__file__).resolve().parents[1] / "static" / "index.html")
 
 
 @router.get("/health")

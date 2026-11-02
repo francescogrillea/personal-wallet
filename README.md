@@ -45,6 +45,11 @@ The API is available at http://localhost:8000 and the interactive documentation
 at http://localhost:8000/docs. The container runs as an unprivileged user and
 includes a health check on `/health`.
 
+Open http://localhost:8000 to upload files through the minimal web interface.
+Choose liquidity transactions, portfolio transactions, or a portfolio snapshot,
+select one Excel file, and click **Carica file**. The page shows the upload result
+and the number of rows saved.
+
 ```bash
 docker compose logs -f api
 docker compose down
